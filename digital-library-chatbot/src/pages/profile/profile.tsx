@@ -1,33 +1,37 @@
 import Form from "react-bootstrap/esm/Form";
-import "./sign-up.css";
+import "./profile.css";
 import Button from "react-bootstrap/esm/Button";
 import Container from "react-bootstrap/esm/Container";
 import Row from "react-bootstrap/esm/Row";
 import Col from "react-bootstrap/esm/Col";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-function SignUp() {
+function Profile() {
   const [userData, setUserData] = useState({
-    name: "",
     email: "",
+    user_id: "",
+    name: "",
     password: "",
-    confirmpassword: "",
-    is_admin: 0,
-    is_active: 0,
   });
+
+  useEffect(() => {
+    const userInfo: any = JSON.parse(String(localStorage.getItem("userinfo")));
+    setUserData({ ...userData, email: userInfo.email, user_id: userInfo.user_id, name: userInfo.name || "" });
+
+  }, []);
+
   const handleChange = (event: any) => {
     setUserData({
       ...userData,
       [event.target.name]: event.target.value,
     });
   };
-  const handleSubmit = async (event: any) => {
-    event.preventDefault();
-    console.log(userData);
+
+  const handleSubmit = async () => {
     const response = await fetch(
-      `${String(process.env.REACT_APP_API_HOST)}/user`,
+      `${String(process.env.REACT_APP_API_HOST)}/update-user`,
       {
         method: "POST",
         headers: {
@@ -36,22 +40,8 @@ function SignUp() {
         body: JSON.stringify(userData),
       }
     );
-
     if (response && response.status === 201) {
-      setUserData({
-        name: "",
-        email: "",
-        password: "",
-        confirmpassword: "",
-        is_active: 0,
-        is_admin: 0,
-      });
-      toast(
-        "Your user has been created. You will receive an email once your user is approved by the admin."
-      );
-    } else {
-      const res = await response.json();
-      toast(res.message);
+      toast("User has been updated.");
     }
   };
   return (
@@ -61,27 +51,19 @@ function SignUp() {
           md={{ span: 6, offset: 3 }}
           style={{ textAlign: "left", marginTop: "100px" }}
         >
-          <h1>Signup </h1>
+          <h1>Profile Update </h1>
+          <br />
           <br />
           <Form>
+          <Form.Group className="mb-3" controlId="fromFullName">
+              <Form.Label style={{fontWeight: "bold"}}>{userData.email}</Form.Label>
+              
+            </Form.Group>
             <Form.Group className="mb-3" controlId="fromFullName">
               <Form.Label>Enter Full Name</Form.Label>
               <Form.Control
-                type="fullname"
-                placeholder="Enter Full Name"
                 name="name"
                 value={userData.name}
-                onChange={handleChange}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Label>Enter Email Address</Form.Label>
-              <Form.Control
-                type="email"
-                placeholder="Enter email"
-                name="email"
-                value={userData.email}
                 onChange={handleChange}
               />
             </Form.Group>
@@ -89,9 +71,9 @@ function SignUp() {
             <Form.Group className="mb-3" controlId="formBasicPassword">
               <Form.Label>Enter Password</Form.Label>
               <Form.Control
+                name="password"
                 type="password"
                 placeholder="Password"
-                name="password"
                 value={userData.password}
                 onChange={handleChange}
               />
@@ -101,10 +83,8 @@ function SignUp() {
               <Form.Label>Retype Password</Form.Label>
               <Form.Control
                 type="password"
-                placeholder="Password"
-                name="confirmpassword"
-                value={userData.confirmpassword}
-                onChange={handleChange}
+                placeholder="Confirm Password"
+                name="cpassword"
               />
             </Form.Group>
 
@@ -119,4 +99,4 @@ function SignUp() {
   );
 }
 
-export default SignUp;
+export default Profile;
