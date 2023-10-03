@@ -1,21 +1,17 @@
 import { Link } from "react-router-dom";
 
+
 function Footer(){
     return (
-        <div>
-    <div>
-      <ul>
-        <li>
-          <Link to={`/login`}>Login</Link>
-        </li>
-        <li>
-        <Link to={`/sign-up`}>Sign up</Link>
-        </li>
-      </ul>
+<footer className="page-footer font-small blue pt-4">
+    
 
-      
+    <div className="footer-copyright text-center py-3">© 2023 Copyright:
+        <Link to={'https://maazhasnainkhan.github.io'}> Maaz H Khan</Link>
     </div>
-        </div>
+
+</footer>
+
       );
 }
 
