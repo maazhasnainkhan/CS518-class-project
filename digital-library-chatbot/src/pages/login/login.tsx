@@ -8,6 +8,7 @@ import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { redirect, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function Login() {
   const navigate = useNavigate();
@@ -88,14 +89,14 @@ function Login() {
               />
             </Form.Group>
             <p>
-              Forgot Password? <a href="/forgot-password">Click Here!</a>
+              Forgot Password? <Link to={"/forgot-password"}>Click Here!</Link>
             </p>
             <Button variant="primary" onClick={handleSubmit}>
               Submit
             </Button>
             <ToastContainer />
             <p>
-              Dont have an account? <a href="/sign-up">Click Here!</a>
+              Dont have an account? <Link to={"/sign-up"}>Click Here!</Link>
             </p>
           </Form>
         </Col>

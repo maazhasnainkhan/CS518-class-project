@@ -8,7 +8,7 @@ function Header() {
   return (
     <Navbar expand="lg" className="bg-body-tertiary">
       <Container>
-        <Navbar.Brand href="/search-bar">Digital Library</Navbar.Brand>
+        <Link className="navbar-brand" to={"/search-bar"}>Digital Library</Link>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
