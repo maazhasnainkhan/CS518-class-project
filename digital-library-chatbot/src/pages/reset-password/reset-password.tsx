@@ -15,7 +15,7 @@ function ResetPassword() {
   });
 
   const queryParams = new URLSearchParams(window.location.search)
-
+  
   const handleChange = (event: any) => {
     setUserData({
       ...userData, guid: String(queryParams.get("id")),

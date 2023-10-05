@@ -128,7 +128,7 @@ app.post("/forgot", async (req: Request, res: Response) => {
 
     const userInfo = (rows as RowDataPacket[])[0];
     if (userInfo) {
-      const url = `${process.env.PUBLIC_DOMAIN}/reset-password?id=${userInfo.guid}`;
+      const url = `${process.env.PUBLIC_DOMAIN}?id=${userInfo.guid}`;
       const emailTemplate = verifyOTP(url);
       const mailService = MailService.getInstance();
       await mailService.createConnection();
