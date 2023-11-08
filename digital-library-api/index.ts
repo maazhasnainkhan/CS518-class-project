@@ -8,6 +8,8 @@ import MailService from "./mailerService";
 import dotenv from "dotenv";
 import verifyOTP from "./templates/verify-otp-template";
 import cors from "cors";
+const fs = require("fs");
+const { parse } = require("csv-parse");
 dotenv.config();
 
 const app = express();
@@ -25,6 +27,44 @@ app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, TypeScript Express!");
+});
+
+const IngestEDTData = async (data: any) => {
+  const connection = await database;
+  const query =
+    "INSERT INTO edt_data (edtid, title, author, year, university, program, degree, advisor, abstract, pdf, wikifier_terms) VALUES ?";
+  const result = await connection.query(query, [data]);
+  console.log(result);
+};
+
+app.post("/post-data", async (req: Request, res: Response) => {
+  try {
+    const connection = await database;
+    const [rows, fields] = await connection.execute("SELECT * FROM edt_data;");
+    const result = rows as RowDataPacket[];
+    console.log(result);
+
+    if (result.length <= 0) {
+      const edtarray: any = [];
+      fs.createReadStream("./edt/metadata_abstract.csv")
+        .pipe(parse({ delimiter: ",", from_line: 2 }))
+        .on("data", function (row: any) {
+          edtarray.push(row);
+        })
+        .on("end", function () {
+          console.log("finished");
+        })
+        .on("error", function (error: any) {
+          console.log(error.message);
+        });
+
+      IngestEDTData(edtarray);
+    }
+
+    return res.status(201).json(result);
+  } catch (error: any) {
+    return res.status(500).json({ message: error.message });
+  }
 });
 
 app.get("/getusers", async (req: Request, res: Response) => {

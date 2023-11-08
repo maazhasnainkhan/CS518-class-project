@@ -1,17 +1,15 @@
 {
-    "configurations": [
-        {
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen",
-            "name": "Debug Express",
-            "program": "${workspaceFolder}/index.ts",
-            "request": "launch",
-            "restart": true,
-            "runtimeExecutable": "nodemon",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "pwa-node"
-        }
-    ]
+  "configurations": [
+    {
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "name": "Debug Express",
+      "program": "${workspaceFolder}/index.ts",
+      "request": "launch",
+      "restart": true,
+      "runtimeExecutable": "nodemon",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "pwa-node"
+    }
+  ]
 }
