@@ -8,8 +8,11 @@ import MailService from "./mailerService";
 import dotenv from "dotenv";
 import verifyOTP from "./templates/verify-otp-template";
 import cors from "cors";
-const fs = require("fs");
-const { parse } = require("csv-parse");
+
+import * as fs from "fs";
+import * as path from "path";
+import { parse } from "csv-parse";
+
 dotenv.config();
 
 const app = express();
@@ -37,28 +40,82 @@ const IngestEDTData = async (data: any) => {
   console.log(result);
 };
 
+const wikifierText = async (text: string) => {
+  try {
+    const response = await fetch("http://www.wikifier.org/annotate-article", {
+      method: "POST",
+      body: new URLSearchParams({
+        text: text,
+        userKey: "qicclugaocdekxkxsgdoaqbunmqbbg",
+        lang: "en",
+        pageRankSqThreshold: "0.9",
+        applyPageRankSqThreshold: "true",
+        nTopDfValuesToIgnore: "200",
+        nWordsToIgnoreFromList: "200",
+        wikiDataClasses: "true",
+        wikiDataClassIds: "false",
+        support: "true",
+        ranges: "false",
+        minLinkFrequency: "2",
+        includeCosines: "false",
+        maxMentionEntropy: "3",
+      }),
+    });
+    const data = await response.json();
+    return JSON.stringify(data.annotations);
+  } catch (err: any) {
+    return "";
+  }
+};
+
 app.post("/post-data", async (req: Request, res: Response) => {
   try {
     const connection = await database;
     const [rows, fields] = await connection.execute("SELECT * FROM edt_data;");
+    await connection.execute("DELETE FROM edt_data;");
     const result = rows as RowDataPacket[];
-    console.log(result);
 
     if (result.length <= 0) {
-      const edtarray: any = [];
-      fs.createReadStream("./edt/metadata_abstract.csv")
-        .pipe(parse({ delimiter: ",", from_line: 2 }))
-        .on("data", function (row: any) {
-          edtarray.push(row);
-        })
-        .on("end", function () {
-          console.log("finished");
-        })
-        .on("error", function (error: any) {
-          console.log(error.message);
-        });
+      let edtarray: any = [];
 
-      IngestEDTData(edtarray);
+      const processFile = async () => {
+        const records: any = [];
+        const parser = fs
+          .createReadStream(`${__dirname}/edt/metadata_abstract.csv`)
+          .pipe(
+            parse({
+              delimiter: ",",
+              from_line: 2,
+            })
+          );
+        for await (const record of parser) {
+          // Work with each record
+          //edtid, title, author, year, university, program, degree, advisor, abstract, pdf, wikifier_terms
+          records.push([
+            record[0],
+            record[5],
+            record[2],
+            record[7],
+            record[6],
+            record[4],
+            record[3],
+            record[1],
+            record[8],
+          ]);
+        }
+        return records;
+      };
+
+      edtarray = await processFile();
+
+      edtarray = await Promise.all(
+        edtarray.map(async (item: any) => {
+          const wikifierterms = await wikifierText(item[8]);
+          return [...item, `${item[0]}.pdf`, wikifierterms];
+        })
+      );
+
+      await IngestEDTData(edtarray);
     }
 
     return res.status(201).json(result);
