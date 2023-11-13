@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { RowDataPacket } from "mysql2/promise";
 import verifyEmail from "./templates/verify-email-template";
 import MailService from "./mailerService";
+import ElasticSearchClient from "./elastic-search";
 import dotenv from "dotenv";
 import verifyOTP from "./templates/verify-otp-template";
 import cors from "cors";
@@ -12,6 +13,7 @@ import cors from "cors";
 import * as fs from "fs";
 import * as path from "path";
 import { parse } from "csv-parse";
+import { EDT } from "./edt";
 
 dotenv.config();
 
@@ -122,6 +124,22 @@ app.post("/post-data", async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
+});
+
+app.post("/index-documents", async (req: Request, res: Response) => {
+  const esClient = new ElasticSearchClient();
+  const connection = await database;
+  const [rows, fields] = await connection.execute("SELECT * FROM edt_data;");
+  const edtArray = rows as EDT[];
+  await esClient.createBulkIndexes(edtArray);
+  return res.status(201).json({ message: "indexes created..." });
+});
+
+app.get("/query-documents", async (req: Request, res: Response) => {
+  const esClient = new ElasticSearchClient();
+  const searchTerm = String(req.query["query"]);
+  const result = await esClient.searchIndexes(searchTerm);
+  return res.status(201).json({ message: "indexes created...", data: result });
 });
 
 app.get("/getusers", async (req: Request, res: Response) => {
