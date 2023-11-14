@@ -12,6 +12,7 @@ import SearchBar from "./pages/search-bar/search-bar";
 import OTP from "./pages/otp/otp";
 import Profile from "./pages/profile/profile";
 import UserAdmin from "./pages/user-admin/user-admin";
+import Detail from "./pages/detail/detail";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -20,7 +21,6 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <SearchBar />,
-        
       },
       {
         path: "/login",
@@ -53,6 +53,10 @@ const router = createBrowserRouter([
       {
         path: "/user-admin",
         element: <UserAdmin />,
+      },
+      {
+        path: "/detail",
+        element: <Detail />,
       },
     ],
   },

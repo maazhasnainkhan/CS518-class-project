@@ -142,6 +142,18 @@ app.get("/query-documents", async (req: Request, res: Response) => {
   return res.status(201).json({ message: "indexes created...", data: result });
 });
 
+app.get("/get-edt", async (req: Request, res: Response) => {
+  const connection = await database;
+  const edtid = String(req.query["id"]);
+  const [rows, fields] = await connection.execute(
+    "SELECT * FROM edt_data WHERE edtid = ?",
+    [edtid]
+  );
+  const edt = (rows as RowDataPacket[])[0];
+
+  return res.status(201).json({ data: edt });
+});
+
 app.get("/getusers", async (req: Request, res: Response) => {
   const connection = await database;
   const [rows, fields] = await connection.execute(
