@@ -81,6 +81,12 @@ function Detail() {
             </Row>
             <Row className="mb-3">
               <Form.Group as={Col} controlId="formGridEmail">
+                <Form.Label>Abstract</Form.Label>
+                <Form.Control as="textarea" value={String(edtData?.abstract)} />
+              </Form.Group>
+            </Row>
+            <Row className="mb-3">
+              <Form.Group as={Col} controlId="formGridEmail">
                 <Form.Label>PDF</Form.Label>
                 <a href={edtData?.pdf}>Download</a>
               </Form.Group>
