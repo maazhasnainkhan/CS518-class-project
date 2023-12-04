@@ -9,6 +9,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { redirect, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import ReCAPTCHA from "react-google-recaptcha";
 
 function Login() {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ function Login() {
     email: "",
     password: "",
   });
+  const [enableSubmit, setEnableSubmit] = useState(true);
   const handleChange = (event: any) => {
     setLoginData({
       ...loginData,
@@ -23,7 +25,6 @@ function Login() {
     });
   };
   const handleSubmit = async (event: any) => {
-    
     event.preventDefault();
     console.log(loginData);
     const response = await fetch(
@@ -57,6 +58,10 @@ function Login() {
       }
     }
   };
+
+  const onChangeRecaptcha = async (event: any) => {
+    setEnableSubmit(false);
+  };
   return (
     <Container>
       <Row>
@@ -88,10 +93,18 @@ function Login() {
                 onChange={handleChange}
               />
             </Form.Group>
+            <ReCAPTCHA
+              sitekey="6Lc5CiUpAAAAAITwPBzzg2W3pUIX424Fpgu1HTrc"
+              onChange={onChangeRecaptcha}
+            />
             <p>
               Forgot Password? <Link to={"/forgot-password"}>Click Here!</Link>
             </p>
-            <Button variant="primary" onClick={handleSubmit}>
+            <Button
+              variant="primary"
+              onClick={handleSubmit}
+              disabled={enableSubmit}
+            >
               Submit
             </Button>
             <ToastContainer />

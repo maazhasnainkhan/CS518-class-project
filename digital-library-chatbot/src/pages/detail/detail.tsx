@@ -4,9 +4,11 @@ import Container from "react-bootstrap/esm/Container";
 import Form from "react-bootstrap/esm/Form";
 import Row from "react-bootstrap/esm/Row";
 import { EDT } from "../../global/types/edt";
+import parse from "html-react-parser";
 
 function Detail() {
   const [edtData, setEdtData] = useState<EDT>();
+  const [abstract, setAbstract] = useState<string>();
   useEffect(() => {
     async function getEdtData(edtid: any) {
       const response = await fetch(
@@ -16,6 +18,26 @@ function Detail() {
       const edtResponse = await response.json();
       //   const pdfLink =
       setEdtData(edtResponse.data);
+
+      const wikifierArray = JSON.parse(edtResponse.data.wikifier_terms);
+      console.log(wikifierArray);
+      const abstractResult = edtResponse.data.abstract
+        .replace('["', "")
+        .replace('"]', "");
+      const htmlAbstract = abstractResult
+        .split(" ")
+        .map((item: string) => {
+          const exist = wikifierArray.find((wikiitem: any) => {
+            return String(wikiitem.title).toLowerCase() === item.toLowerCase();
+          });
+          if (exist) {
+            return `<a href="${exist.url}">${item}</a>`;
+          } else {
+            return item;
+          }
+        })
+        .join(" ");
+      setAbstract(`<p style="font-size: 12px;">${htmlAbstract}</p>`);
     }
 
     const queryParams = new URLSearchParams(window.location.search);
@@ -82,7 +104,11 @@ function Detail() {
             <Row className="mb-3">
               <Form.Group as={Col} controlId="formGridEmail">
                 <Form.Label>Abstract</Form.Label>
-                <Form.Control as="textarea" value={String(edtData?.abstract)} />
+                {/* <Form.Control as="textarea" value={String(edtData?.abstract)} /> */}
+                {/* <p style={{ fontSize: "12px" }}>
+                  {edtData?.abstract.replace('["', "").replace('"]', "")}
+                </p> */}
+                {parse(abstract || "")}
               </Form.Group>
             </Row>
             <Row className="mb-3">
