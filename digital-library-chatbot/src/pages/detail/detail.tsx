@@ -11,6 +11,7 @@ import "react-chatbot-kit/build/main.css";
 import botconfig from "../../chatbot/config";
 import MessageParser from "../../chatbot/MessageParser";
 import ActionProvider from "../../chatbot/ActionProvider";
+import Badge from "react-bootstrap/esm/Badge";
 
 function Detail() {
   const [edtData, setEdtData] = useState<EDT>();
@@ -25,7 +26,10 @@ function Detail() {
       //   const pdfLink =
       setEdtData(edtResponse.data);
 
-      const wikifierArray = JSON.parse(edtResponse.data.wikifier_terms);
+      const wikifierArray =
+        edtResponse.data.wikifier_terms !== ""
+          ? JSON.parse(edtResponse.data.wikifier_terms)
+          : [];
       const abstractResult = edtResponse.data.abstract
         .replace('["', "")
         .replace('"]', "");
@@ -55,11 +59,19 @@ function Detail() {
   }, []);
 
   const onChange = () => {};
+  const [cbtoggle, setCbToggle] = useState<Boolean>(false);
+  const toggleChatbot = () => {
+    if (cbtoggle === false) {
+      setCbToggle(true);
+    } else {
+      setCbToggle(false);
+    }
+  };
 
   return (
     <Container>
       <Row>
-        <Col>
+        <Col style={{ textAlign: "left" }}>
           <br />
           <h1 style={{ textAlign: "left" }}>EDT Meta Information </h1>
           <br />
@@ -154,11 +166,21 @@ function Detail() {
               </Form.Group>
             </Row>
           </Form>
-          <ChatBot
-            config={botconfig}
-            messageParser={MessageParser}
-            actionProvider={ActionProvider}
-          />
+          <div className={cbtoggle ? "EnableChatbot" : "DisableChatbot"}>
+            <ChatBot
+              config={botconfig}
+              messageParser={MessageParser}
+              actionProvider={ActionProvider}
+            />
+          </div>
+          <br></br>
+          <Badge
+            bg="secondary"
+            style={{ cursor: "pointer" }}
+            onClick={toggleChatbot}
+          >
+            ChatBot
+          </Badge>
         </Col>
       </Row>
     </Container>

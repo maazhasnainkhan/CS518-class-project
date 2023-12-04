@@ -2,7 +2,7 @@
   text-align: center;
 }
 
-.Alignment{
+.Alignment {
   text-align: left;
 }
 
@@ -16,13 +16,19 @@
   pointer-events: none;
 }
 
+.EnableChatbot {
+  display: block;
+}
+
+.DisableChatbot {
+  display: none;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
   }
 }
-
-
 
 @keyframes App-logo-spin {
   from {
@@ -34,7 +40,7 @@
 }
 
 .button {
-  background-color: #4CAF50; /* Green */
+  background-color: #4caf50; /* Green */
   border: none;
   color: white;
   padding: 15px 32px;
