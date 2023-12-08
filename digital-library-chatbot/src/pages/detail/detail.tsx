@@ -4,9 +4,18 @@ import Container from "react-bootstrap/esm/Container";
 import Form from "react-bootstrap/esm/Form";
 import Row from "react-bootstrap/esm/Row";
 import { EDT } from "../../global/types/edt";
+import parse from "html-react-parser";
+import ChatBot from "react-chatbot-kit";
+import "react-chatbot-kit/build/main.css";
+
+import botconfig from "../../chatbot/config";
+import MessageParser from "../../chatbot/MessageParser";
+import ActionProvider from "../../chatbot/ActionProvider";
+import Badge from "react-bootstrap/esm/Badge";
 
 function Detail() {
   const [edtData, setEdtData] = useState<EDT>();
+  const [abstract, setAbstract] = useState<string>();
   useEffect(() => {
     async function getEdtData(edtid: any) {
       const response = await fetch(
@@ -16,6 +25,29 @@ function Detail() {
       const edtResponse = await response.json();
       //   const pdfLink =
       setEdtData(edtResponse.data);
+
+      const wikifierArray =
+        edtResponse.data.wikifier_terms !== ""
+          ? JSON.parse(edtResponse.data.wikifier_terms)
+          : [];
+      const abstractResult = edtResponse.data.abstract
+        .replace('["', "")
+        .replace('"]', "");
+      localStorage.setItem("abstractdata", abstractResult);
+      const htmlAbstract = abstractResult
+        .split(" ")
+        .map((item: string) => {
+          const exist = wikifierArray.find((wikiitem: any) => {
+            return String(wikiitem.title).toLowerCase() === item.toLowerCase();
+          });
+          if (exist) {
+            return `<a href="${exist.url}">${item}</a>`;
+          } else {
+            return item;
+          }
+        })
+        .join(" ");
+      setAbstract(`<p style="font-size: 12px;">${htmlAbstract}</p>`);
     }
 
     const queryParams = new URLSearchParams(window.location.search);
@@ -26,10 +58,20 @@ function Detail() {
     }
   }, []);
 
+  const onChange = () => {};
+  const [cbtoggle, setCbToggle] = useState<Boolean>(false);
+  const toggleChatbot = () => {
+    if (cbtoggle === false) {
+      setCbToggle(true);
+    } else {
+      setCbToggle(false);
+    }
+  };
+
   return (
     <Container>
       <Row>
-        <Col>
+        <Col style={{ textAlign: "left" }}>
           <br />
           <h1 style={{ textAlign: "left" }}>EDT Meta Information </h1>
           <br />
@@ -37,30 +79,50 @@ function Detail() {
             <Row className="mb-3">
               <Form.Group as={Col} controlId="formGridEmail">
                 <Form.Label>EDT ID</Form.Label>
-                <Form.Control type="text" value={String(edtData?.edtid)} />
+                <Form.Control
+                  type="text"
+                  value={String(edtData?.edtid)}
+                  onChange={onChange}
+                />
               </Form.Group>
 
               <Form.Group as={Col} controlId="formGridPassword">
                 <Form.Label>Title</Form.Label>
-                <Form.Control type="text" value={String(edtData?.title)} />
+                <Form.Control
+                  type="text"
+                  value={String(edtData?.title)}
+                  onChange={onChange}
+                />
               </Form.Group>
             </Row>
 
             <Row className="mb-3">
               <Form.Group as={Col} controlId="formGridEmail">
                 <Form.Label>Author</Form.Label>
-                <Form.Control type="text" value={String(edtData?.author)} />
+                <Form.Control
+                  type="text"
+                  value={String(edtData?.author)}
+                  onChange={onChange}
+                />
               </Form.Group>
 
               <Form.Group as={Col} controlId="formGridPassword">
                 <Form.Label>Year</Form.Label>
-                <Form.Control type="text" value={String(edtData?.year)} />
+                <Form.Control
+                  type="text"
+                  value={String(edtData?.year)}
+                  onChange={onChange}
+                />
               </Form.Group>
             </Row>
             <Row className="mb-3">
               <Form.Group as={Col} controlId="formGridEmail">
                 <Form.Label>University</Form.Label>
-                <Form.Control type="text" value={String(edtData?.university)} />
+                <Form.Control
+                  type="text"
+                  value={String(edtData?.university)}
+                  onChange={onChange}
+                />
               </Form.Group>
 
               <Form.Group as={Col} controlId="formGridPassword">
@@ -71,18 +133,30 @@ function Detail() {
             <Row className="mb-3">
               <Form.Group as={Col} controlId="formGridEmail">
                 <Form.Label>Degree</Form.Label>
-                <Form.Control type="text" value={String(edtData?.degree)} />
+                <Form.Control
+                  type="text"
+                  value={String(edtData?.degree)}
+                  onChange={onChange}
+                />
               </Form.Group>
 
               <Form.Group as={Col} controlId="formGridPassword">
                 <Form.Label>Advisor</Form.Label>
-                <Form.Control type="text" value={String(edtData?.advisor)} />
+                <Form.Control
+                  type="text"
+                  value={String(edtData?.advisor)}
+                  onChange={onChange}
+                />
               </Form.Group>
             </Row>
             <Row className="mb-3">
               <Form.Group as={Col} controlId="formGridEmail">
                 <Form.Label>Abstract</Form.Label>
-                <Form.Control as="textarea" value={String(edtData?.abstract)} />
+                {/* <Form.Control as="textarea" value={String(edtData?.abstract)} /> */}
+                {/* <p style={{ fontSize: "12px" }}>
+                  {edtData?.abstract.replace('["', "").replace('"]', "")}
+                </p> */}
+                {parse(abstract || "")}
               </Form.Group>
             </Row>
             <Row className="mb-3">
@@ -92,6 +166,21 @@ function Detail() {
               </Form.Group>
             </Row>
           </Form>
+          <div className={cbtoggle ? "EnableChatbot" : "DisableChatbot"}>
+            <ChatBot
+              config={botconfig}
+              messageParser={MessageParser}
+              actionProvider={ActionProvider}
+            />
+          </div>
+          <br></br>
+          <Badge
+            bg="secondary"
+            style={{ cursor: "pointer" }}
+            onClick={toggleChatbot}
+          >
+            ChatBot
+          </Badge>
         </Col>
       </Row>
     </Container>

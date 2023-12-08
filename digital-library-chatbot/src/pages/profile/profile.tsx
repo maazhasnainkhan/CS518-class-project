@@ -14,13 +14,19 @@ function Profile() {
     user_id: "",
     name: "",
     password: "",
+    guid: "",
   });
 
   useEffect(() => {
     const userInfo: any = JSON.parse(String(localStorage.getItem("userinfo")));
-    setUserData({ ...userData, email: userInfo.email, user_id: userInfo.user_id, name: userInfo.name || "" });
-
-  }, []);
+    setUserData({
+      ...userData,
+      email: userInfo.email,
+      user_id: userInfo.user_id,
+      guid: userInfo.guid || "",
+      name: userInfo.name || "",
+    });
+  }, [localStorage]);
 
   const handleChange = (event: any) => {
     setUserData({
@@ -44,6 +50,31 @@ function Profile() {
       toast("User has been updated.");
     }
   };
+  const updateAPI = async () => {
+    const response = await fetch(
+      `${String(process.env.REACT_APP_API_HOST)}/update-api-key`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      }
+    );
+    if (response && response.status === 201) {
+      const result = await response.json();
+      const userInfo = result;
+      localStorage.setItem("userinfo", JSON.stringify(userInfo));
+      setUserData({
+        ...userData,
+        email: userInfo.email,
+        user_id: userInfo.user_id,
+        guid: userInfo.guid || "",
+        name: userInfo.name || "",
+      });
+      toast("API key has been updated.");
+    }
+  };
   return (
     <Container>
       <Row>
@@ -55,9 +86,10 @@ function Profile() {
           <br />
           <br />
           <Form>
-          <Form.Group className="mb-3" controlId="fromFullName">
-              <Form.Label style={{fontWeight: "bold"}}>{userData.email}</Form.Label>
-              
+            <Form.Group className="mb-3" controlId="fromFullName">
+              <Form.Label style={{ fontWeight: "bold" }}>
+                {userData.email}
+              </Form.Label>
             </Form.Group>
             <Form.Group className="mb-3" controlId="fromFullName">
               <Form.Label>Enter Full Name</Form.Label>
@@ -90,6 +122,24 @@ function Profile() {
 
             <Button variant="primary" onClick={handleSubmit}>
               Submit
+            </Button>
+            <ToastContainer />
+          </Form>
+          <hr></hr>
+          <h1>API Information </h1>
+          <Form>
+            <Form.Group className="mb-3" controlId="formRetypePassword">
+              <Form.Label>API Key</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="API KEY"
+                name="guid"
+                value={userData.guid}
+              />
+            </Form.Group>
+
+            <Button variant="primary" onClick={updateAPI}>
+              Update
             </Button>
             <ToastContainer />
           </Form>

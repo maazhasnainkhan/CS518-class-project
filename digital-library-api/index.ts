@@ -139,7 +139,25 @@ app.get("/query-documents", async (req: Request, res: Response) => {
   const esClient = new ElasticSearchClient();
   const searchTerm = String(req.query["query"]);
   const result = await esClient.searchIndexes(searchTerm);
-  return res.status(201).json({ message: "indexes created...", data: result });
+  return res.status(201).json({ message: "indexes query...", data: result });
+});
+
+app.get("/search", async (req: Request, res: Response) => {
+  const esClient = new ElasticSearchClient();
+  const searchTerm = String(req.query["query"]);
+  const guid = String(req.query["key"]);
+  const connection = await database;
+  const [rows, fields] = await connection.execute(
+    "SELECT * FROM USERS WHERE guid = ?",
+    [guid]
+  );
+  const userInfo = (rows as RowDataPacket[])[0];
+  if (userInfo) {
+    const result = await esClient.searchIndexes(searchTerm);
+    return res.status(201).json({ message: "indexes query...", data: result });
+  } else {
+    return res.status(404).json({ message: "API Key is not valid" });
+  }
 });
 
 app.get("/get-edt", async (req: Request, res: Response) => {
@@ -333,6 +351,32 @@ app.post("/update-user", async (req: Request, res: Response) => {
         `UPDATE USERS SET NAME = '${req.body.name}', PASSWORD = '${hash}' where user_id = ${req.body.user_id}`
       );
       return res.status(201).json({ message: "User Updated" });
+    }
+    return res.status(404).json({ message: "user not found" });
+  } catch (error: any) {
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+app.post("/update-api-key", async (req: Request, res: Response) => {
+  try {
+    const connection = await database;
+    const [rows, fields] = await connection.execute(
+      "SELECT * FROM USERS WHERE user_id = ?",
+      [req.body.user_id]
+    );
+
+    const userInfo = (rows as RowDataPacket[])[0];
+    if (userInfo) {
+      const token = uuidv4();
+      const [rows, fields] = await connection.execute(
+        `UPDATE USERS SET GUID = '${token}' where user_id = ${req.body.user_id}`
+      );
+
+      userInfo.guid = token;
+      return res
+        .status(201)
+        .json({ message: "User Updated", userinfo: userInfo });
     }
     return res.status(404).json({ message: "user not found" });
   } catch (error: any) {
